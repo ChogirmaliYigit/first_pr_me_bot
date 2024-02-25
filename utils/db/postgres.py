@@ -17,6 +17,7 @@ class Database:
             password=config.DB_PASS,
             host=config.DB_HOST,
             database=config.DB_NAME,
+            port=config.DB_PORT,
         )
 
     async def execute(
@@ -28,7 +29,6 @@ class Database:
         fetchrow: bool = False,
         execute: bool = False,
     ):
-        
         async with self.pool.acquire() as connection:
             connection: Connection
             async with connection.transaction():
@@ -42,13 +42,28 @@ class Database:
                     result = await connection.execute(command, *args)
             return result
 
+    async def create_tables(self):
+        await self.create()
+        await self.create_table_users()
+        await self.create_table_images()
+
     async def create_table_users(self):
         sql = """
         CREATE TABLE IF NOT EXISTS Users (
-        id SERIAL PRIMARY KEY,
-        full_name VARCHAR(255) NOT NULL,
-        username varchar(255) NULL,
-        telegram_id BIGINT NOT NULL UNIQUE
+            id SERIAL PRIMARY KEY,
+            full_name VARCHAR(255) NOT NULL,
+            username varchar(255) NULL,
+            telegram_id BIGINT NOT NULL UNIQUE
+        );
+        """
+        await self.execute(sql, execute=True)
+
+    async def create_table_images(self):
+        sql = """
+        CREATE TABLE IF NOT EXISTS Images (
+            id SERIAL PRIMARY KEY,
+            file_id TEXT NOT NULL,
+            link TEXT NOT NULL
         );
         """
         await self.execute(sql, execute=True)
@@ -63,6 +78,18 @@ class Database:
     async def add_user(self, full_name, username, telegram_id):
         sql = "INSERT INTO users (full_name, username, telegram_id) VALUES($1, $2, $3) returning *"
         return await self.execute(sql, full_name, username, telegram_id, fetchrow=True)
+
+    async def add_image(self, file_id, link):
+        sql = "INSERT INTO Images (file_id, link) VALUES ($1, $2) returning *"
+        return await self.execute(sql, file_id, link, fetchrow=True)
+
+    async def select_image_by_link(self, link):
+        sql = "SELECT * FROM Images WHERE link=$1"
+        return await self.execute(sql, link, fetchrow=True)
+
+    async def select_image_by_file_id(self, file_id):
+        sql = "SELECT * FROM Images WHERE file_id=$1"
+        return await self.execute(sql, file_id, fetchrow=True)
 
     async def select_all_users(self):
         sql = "SELECT * FROM Users"
