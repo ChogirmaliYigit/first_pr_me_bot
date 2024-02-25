@@ -4,7 +4,7 @@ from openpyxl.styles import Font
 
 async def export_to_excel(data, headings, filepath):
     """
-    Exports data from PostgreSQL to an Excel spreadsheet using psycopg2.
+    Exports data from Postgresql to an Excel spreadsheet using psycopg2.
 
     Arguments:
     connection - an open psycopg2 (this function does not close the connection)

@@ -12,12 +12,12 @@ async def get_first_pr(username: str):
         async with session.get(config.GITHUB_USER_URL.format(username=username)) as user_response:
             data = await user_response.json()
             if data.get("message") == "Not Found":
-                return None, f"**{username}** Githubda topilmadi\.", None, None
+                return None, f"*{username}* doesn't appear to be on GitHub at all\.", None, None
 
         async with session.get(config.GITHUB_PR_URL.format(username=username)) as pr_response:
             response = await pr_response.json()
             if not response.get("items", None):
-                return None, f"**{username}** hali Pull Request yubormagan ko'rinadi\.", None, None
+                return None, f"It doesn't look like *{username}* has sent a pull request yet\.", None, None
 
             detail = response["items"][0]
             number = detail["number"]

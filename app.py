@@ -16,16 +16,13 @@ def setup_middlewares(dispatcher: Dispatcher, bot: Bot) -> None:
     """MIDDLEWARE"""
     from middlewares.throttling import ThrottlingMiddleware
 
-    # Spamdan himoya qilish uchun klassik ichki o'rta dastur. So'rovlar orasidagi asosiy vaqtlar 0,5 soniya
-    dispatcher.message.middleware(ThrottlingMiddleware(slow_mode_delay=0.5))
+    dispatcher.message.middleware(ThrottlingMiddleware(slow_mode_delay=1))
 
 
 def setup_filters(dispatcher: Dispatcher) -> None:
     """FILTERS"""
     from filters import ChatPrivateFilter
 
-    # Chat turini aniqlash uchun klassik umumiy filtr
-    # Filtrni handlers/users/__init__ -dagi har bir routerga alohida o'rnatish mumkin
     dispatcher.message.filter(ChatPrivateFilter(chat_type=["private"]))
 
 
@@ -64,7 +61,6 @@ async def aiogram_on_shutdown_polling(dispatcher: Dispatcher, bot: Bot):
 def main():
     """CONFIG"""
     from data.config import BOT_TOKEN
-    from aiogram.enums import ParseMode
     from aiogram.fsm.storage.memory import MemoryStorage
 
     bot = Bot(token=BOT_TOKEN)
