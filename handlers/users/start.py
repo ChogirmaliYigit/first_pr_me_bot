@@ -1,5 +1,5 @@
 from aiogram import Router, types
-from aiogram.filters import CommandStart
+from aiogram.filters import CommandStart, CommandObject
 from aiogram.enums.parse_mode import ParseMode
 from aiogram.client.session.middlewares.request_logging import logger
 from loader import db, bot
@@ -7,6 +7,14 @@ from data.config import ADMINS
 from utils.extra_datas import make_title
 
 router = Router()
+
+
+@router.message(CommandStart(deep_link=True))
+async def deep_linking(message: types.Message, command: CommandObject):
+    user = await db.select_referral_by_user(user_id=message.from_user.id)
+    if not user:
+        await db.add_referral(referral=command.args, user_id=message.from_user.id)
+    await do_start(message)
 
 
 @router.message(CommandStart())

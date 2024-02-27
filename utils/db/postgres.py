@@ -46,6 +46,7 @@ class Database:
         await self.create()
         await self.create_table_users()
         await self.create_table_images()
+        await self.create_table_referrals()
 
     async def create_table_users(self):
         sql = """
@@ -68,6 +69,16 @@ class Database:
         """
         await self.execute(sql, execute=True)
 
+    async def create_table_referrals(self):
+        sql = """
+        CREATE TABLE IF NOT EXISTS Referrals (
+            id SERIAL PRIMARY KEY,
+            referral TEXT NOT NULL,
+            user_id BIGINT NOT NULL
+        );
+        """
+        await self.execute(sql, execute=True)
+
     @staticmethod
     def format_args(sql, parameters: dict):
         sql += " AND ".join(
@@ -82,6 +93,14 @@ class Database:
     async def add_image(self, file_id, link):
         sql = "INSERT INTO Images (file_id, link) VALUES ($1, $2) returning *"
         return await self.execute(sql, file_id, link, fetchrow=True)
+
+    async def add_referral(self, referral: str, user_id: int):
+        sql = "INSERT INTO Referrals (referral, user_id) VALUES ($1, $2) returning *"
+        return await self.execute(sql, referral, user_id, fetchrow=True)
+
+    async def select_referral_by_user(self, user_id: int):
+        sql = "SELECT * FROM Referrals WHERE user_id=$1"
+        return await self.execute(sql, user_id, fetchrow=True)
 
     async def select_image_by_link(self, link):
         sql = "SELECT * FROM Images WHERE link=$1"
